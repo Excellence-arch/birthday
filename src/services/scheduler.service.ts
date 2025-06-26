@@ -12,22 +12,27 @@ const checkBirthdays = (): void => {
     const twoDaysLater = new Date(today);
     twoDaysLater.setDate(today.getDate() + 2);
 
+    const oneDayLater = new Date(today);
+    oneDayLater.setDate(today.getDate() + 1);
+
     try {
       const users = await User.find();
 
       users.forEach((user: IUser) => {
         const dob = new Date(user.dob);
-        dob.setFullYear(today.getFullYear()); // Compare with current year
+        dob.setFullYear(today.getFullYear());
 
-        // Check if the adjusted birthday is in 2 days
         if (
-          dob.getDate() === twoDaysLater.getDate() &&
-          dob.getMonth() === twoDaysLater.getMonth()
+          (dob.getDate() === twoDaysLater.getDate() &&
+            dob.getMonth() === twoDaysLater.getMonth()) ||
+          (dob.getDate() === oneDayLater.getDate() &&
+            dob.getMonth() === oneDayLater.getMonth())
         ) {
           console.log(`Found upcoming birthday for ${user.name}`);
           sendBirthdayReminder(user);
         }
       });
+      console.log('Birthday check completed.');
     } catch (err) {
       console.error('Error checking birthdays:', err);
     }
