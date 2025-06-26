@@ -6,13 +6,19 @@ import userRoutes from './routes/user.route';
 import connectDB from './config/db';
 import checkBirthdays from './services/scheduler.service';
 import importRoutes from './routes/imports.route';
+import authRoutes from './routes/auth.route';
+import 'dotenv/config';
 import fileUpload from 'express-fileupload';
+
+
+
 
 const app = express();
 app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
+
 app.use(
   fileUpload({
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
@@ -24,6 +30,7 @@ app.use(
 
 connectDB();
 
+app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes);
 app.use('/api/import', importRoutes);
 
