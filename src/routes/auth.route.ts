@@ -42,7 +42,7 @@ router.get(
       });
 
       res.redirect(
-        `http://localhost:5173/dashboard?token=${token}&user=${encodeURIComponent(
+        `https://birthday-pwa.vercel.app/dashboard?token=${token}&user=${encodeURIComponent(
           JSON.stringify(user)
         )}`
       );
