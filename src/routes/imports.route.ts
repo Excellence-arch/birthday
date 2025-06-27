@@ -1,4 +1,6 @@
 import { Router, Request, Response } from 'express';
+import authenticate from '../middlewares/auth.middleware';
+import { Types } from 'mongoose';
 import { importUsersFromCSV } from '../services/csvImporter.service';
 // import path from 'path';
 // import fs from 'fs';
@@ -6,10 +8,17 @@ import { importUsersFromCSV } from '../services/csvImporter.service';
 
 const router = Router();
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
     // console.log(req.body);
     // console.log(req.files)
+
+    const userId: Types.ObjectId | undefined = req.user?._id;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
     if (!req.files || !req.files.csv) {
       res.status(400).json({ error: 'No CSV file uploaded' });
       return;
@@ -22,7 +31,7 @@ router.post('/', async (req: Request, res: Response) => {
     // await csvFile.mv(uploadPath);
 
     // Import users from CSV
-    const result = await importUsersFromCSV(csvFile.data);
+    const result = await importUsersFromCSV(csvFile.data, userId);
 
     // Delete the temporary file
     // fs.unlinkSync(uploadPath);

@@ -16,6 +16,11 @@ const userSchema = new Schema<IUser>({
     type: Date,
     required: true,
   },
+  account: {
+    type: Schema.Types.ObjectId,
+    ref: 'Account',
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

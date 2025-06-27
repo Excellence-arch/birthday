@@ -2,9 +2,10 @@ import { Readable } from 'stream';
 import csv from 'csv-parser';
 import User from '../models/user.model'; // adjust path as needed
 import { ICsvUser } from '../interfaces/ICsvUser.interface'; // adjust path as needed
+import { Types } from 'mongoose';
 
 export const importUsersFromCSV = async (
-  buffer: Buffer
+  buffer: Buffer, accountId: Types.ObjectId
 ): Promise<{ success: number; duplicates: number }> => {
   const results: ICsvUser[] = [];
   let successCount = 0;
@@ -48,6 +49,7 @@ export const importUsersFromCSV = async (
             const existingUser = await User.findOne({
               name: user.Fullname,
               phone: user['Whatsapp Number'],
+              account: accountId,
               dob: {
                 $gte: new Date(
                   new Date(dob).setFullYear(dob.getFullYear() - 1)
@@ -62,6 +64,7 @@ export const importUsersFromCSV = async (
               await User.create({
                 name: user.Fullname,
                 phone: user['Whatsapp Number'],
+                account: accountId,
                 dob,
               });
               successCount++;

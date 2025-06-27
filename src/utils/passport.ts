@@ -3,14 +3,14 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Request } from 'express';
 import accountModel from '../models/account.model';
-import { Account } from '../interfaces/Account.interface';
+import { Account, IAccountRequest } from '../interfaces/Account.interface';
 
 export const configurePassport = (app: any) => {
   passport.serializeUser((user: any, done) => {
     done(null, user);
   });
 
-  passport.deserializeUser((user: Account, done) => {
+  passport.deserializeUser((user: any, done) => {
     done(null, user);
   });
 
@@ -43,7 +43,7 @@ export const configurePassport = (app: any) => {
           }
 
           // Convert Mongoose document to plain JS object if needed
-          const userObject: Account = {
+          const userObject: IAccountRequest = {
             _id: account._id,
             email: account.email,
             avatar: account.avatar,

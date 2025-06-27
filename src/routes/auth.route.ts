@@ -11,40 +11,52 @@ const router = Router();
 configurePassport(router);
 
 router.get(
-  '/auth/google',
+  '/google',
   passport.authenticate('google', {
     scope: ['email', 'profile'],
+    session: false,
     prompt: 'select_account',
   })
 );
 
 router.get(
-  '/auth/google/callback',
+  '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/login',
+    session: false,
   }),
   (req: Request, res: Response) => {
-    const user = req.user;
+    try {
+      const user = req.user;
 
-    if (!user) {
-      res.status(401).json({ message: 'Authentication failed' });
+      if (!user) {
+        res.status(401).json({ message: 'Authentication failed' });
+        return;
+      }
+
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET must be defined in environment variables');
+      }
+
+      const token = jwt.sign(user, process.env.JWT_SECRET, {
+        expiresIn: '1h',
+      });
+
+      res.redirect(
+        `http://localhost:5173/dashboard?token=${token}&user=${encodeURIComponent(
+          JSON.stringify(user)
+        )}`
+      );
+      // res.json({
+      //   message: 'Authentication successful',
+      //   user,
+      //   token,
+      // });
+      return;
+    } catch (error) {
+      console.error('Error during authentication callback:', error);
+      res.status(500).json({ message: 'Internal server error' });
       return;
     }
-
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET must be defined in environment variables');
-    }
-
-    const token = jwt.sign(user, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
-
-    res.json({
-      message: 'Authentication successful',
-      user,
-      token,
-    });
-    return;
   }
 );
 

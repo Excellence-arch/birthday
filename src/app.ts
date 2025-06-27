@@ -8,6 +8,7 @@ import checkBirthdays from './services/scheduler.service';
 import importRoutes from './routes/imports.route';
 import authRoutes from './routes/auth.route';
 import 'dotenv/config';
+import dashboardRoutes from './routes/dashboard.route';
 import fileUpload from 'express-fileupload';
 
 
@@ -33,6 +34,7 @@ connectDB();
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/dashboard', dashboardRoutes)
 
 // Start birthday checker
 checkBirthdays();
