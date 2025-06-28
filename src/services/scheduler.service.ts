@@ -14,7 +14,7 @@ const checkBirthdays = (): void => {
 
     try {
       const users = await User.find().populate('account');
-      console.log(`Found ${users.length} users in database`);
+      // console.log(`Found ${users.length} users in database`);
 
       const accountBirthdays = new Map<
         string,
@@ -40,10 +40,10 @@ const checkBirthdays = (): void => {
         const msDiff = dobThisYear.getTime() - today.getTime();
         const dayDiff = Math.floor(msDiff / (1000 * 60 * 60 * 24));
 
-        console.log(`\nChecking user: ${user.name}`);
-        console.log(`Stored DOB (UTC): ${dob.toISOString()}`);
-        console.log(`DOB this year: ${dobThisYear.toISOString()}`);
-        console.log(`Days until birthday: ${dayDiff}`);
+        // console.log(`\nChecking user: ${user.name}`);
+        // console.log(`Stored DOB (UTC): ${dob.toISOString()}`);
+        // console.log(`DOB this year: ${dobThisYear.toISOString()}`);
+        // console.log(`Days until birthday: ${dayDiff}`);
 
         let daysUntil: number | null = null;
         if (dayDiff === 1 || dayDiff === 2) {
@@ -63,11 +63,11 @@ const checkBirthdays = (): void => {
             user,
             daysUntil,
           });
-          console.log(
-            `MATCH FOUND: ${user.name}'s birthday is in ${daysUntil} day(s)`
-          );
+          // console.log(
+          //   `MATCH FOUND: ${user.name}'s birthday is in ${daysUntil} day(s)`
+          // );
         } else {
-          console.log(`No match for ${user.name}`);
+          // console.log(`No match for ${user.name}`);
         }
       }
 
@@ -75,7 +75,7 @@ const checkBirthdays = (): void => {
       console.log(`Accounts with birthdays: ${accountBirthdays.size}`);
 
       for (const [accountId, data] of accountBirthdays) {
-        console.log(`\nPreparing email for account: ${accountId}`);
+        // console.log(`\nPreparing email for account: ${accountId}`);
         console.log(`Email address: ${data.account.email}`);
         console.log(`Birthdays to notify: ${data.birthdays.length}`);
 
