@@ -2,20 +2,15 @@ import cron from 'node-cron';
 import User from '../models/user.model';
 import { sendBirthdayReminder } from './notification.service';
 
-// Helper to normalize a date to remove time component
-const normalizeDate = (d: Date): Date =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
 // Run every minute for testing
 const checkBirthdays = (): void => {
   cron.schedule('0 9 * * *', async () => {
     console.log('\n=== Starting birthday check ===');
-    console.log(`Current time: ${new Date().toString()}`);
-    console.log(`UTC time: ${new Date().toISOString()}`);
-
     const now = new Date();
-    const today = normalizeDate(now);
-    console.log(`Normalized today: ${today.toString()}`);
+    const today = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    );
+    console.log(`UTC-normalized today: ${today.toISOString()}`);
 
     try {
       const users = await User.find().populate('account');
@@ -27,29 +22,28 @@ const checkBirthdays = (): void => {
       >();
 
       for (const user of users) {
-        const originalDob = new Date(user.dob);
-        const dobThisYear = new Date(
-          today.getFullYear(),
-          originalDob.getMonth(),
-          originalDob.getDate()
+        const dob = new Date(user.dob); // Use directly from DB
+        const dobMonth = dob.getUTCMonth();
+        const dobDate = dob.getUTCDate();
+
+        // Create this year's DOB using UTC parts only
+        let dobThisYear = new Date(
+          Date.UTC(today.getUTCFullYear(), dobMonth, dobDate)
         );
 
-        console.log(`\nChecking user: ${user.name}`);
-        console.log(`Original DOB: ${originalDob.toString()}`);
-        console.log(
-          `DOB this year before adjustment: ${dobThisYear.toString()}`
-        );
-
-        // If the birthday this year already passed, check next year's
         if (dobThisYear < today) {
-          dobThisYear.setFullYear(today.getFullYear() + 1);
+          dobThisYear = new Date(
+            Date.UTC(today.getUTCFullYear() + 1, dobMonth, dobDate)
+          );
         }
 
-        const dayDiff = Math.floor(
-          (dobThisYear.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-        );
+        const msDiff = dobThisYear.getTime() - today.getTime();
+        const dayDiff = Math.floor(msDiff / (1000 * 60 * 60 * 24));
 
-        console.log(`Day difference: ${dayDiff}`);
+        console.log(`\nChecking user: ${user.name}`);
+        console.log(`Stored DOB (UTC): ${dob.toISOString()}`);
+        console.log(`DOB this year: ${dobThisYear.toISOString()}`);
+        console.log(`Days until birthday: ${dayDiff}`);
 
         let daysUntil: number | null = null;
         if (dayDiff === 1 || dayDiff === 2) {
@@ -57,9 +51,6 @@ const checkBirthdays = (): void => {
         }
 
         if (daysUntil !== null) {
-          console.log(
-            `MATCH FOUND: ${user.name}'s birthday is in ${daysUntil} day(s)`
-          );
           const accountId = user.account._id.toString();
 
           if (!accountBirthdays.has(accountId)) {
@@ -72,6 +63,9 @@ const checkBirthdays = (): void => {
             user,
             daysUntil,
           });
+          console.log(
+            `MATCH FOUND: ${user.name}'s birthday is in ${daysUntil} day(s)`
+          );
         } else {
           console.log(`No match for ${user.name}`);
         }
