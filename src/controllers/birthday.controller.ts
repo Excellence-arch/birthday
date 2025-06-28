@@ -17,6 +17,7 @@ export const getBirthdays = async (req: Request, res: Response) => {
     });
 
     res.json(transformedBirthdays);
+    return;
   } catch (error) {
     console.error('Error fetching birthdays:', error);
     res.status(500).json({ message: 'Server error' });
