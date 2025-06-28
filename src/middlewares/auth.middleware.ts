@@ -35,7 +35,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
     req.user = user; // Attach user info to request object
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
+    // console.error("Authentication error:", error);
     if(error instanceof jwt.JsonWebTokenError) {
       // Handle specific JWT errors
       if (error.name === 'TokenExpiredError') {

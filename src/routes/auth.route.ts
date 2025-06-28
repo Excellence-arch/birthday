@@ -41,8 +41,13 @@ router.get(
         expiresIn: '1h',
       });
 
+      // res.redirect(
+      //   `https://birthday-pwa.vercel.app/dashboard?token=${token}&user=${encodeURIComponent(
+      //     JSON.stringify(user)
+      //   )}`
+      // );
       res.redirect(
-        `https://birthday-pwa.vercel.app/dashboard?token=${token}&user=${encodeURIComponent(
+        `http://localhost:5173/dashboard?token=${token}&user=${encodeURIComponent(
           JSON.stringify(user)
         )}`
       );
