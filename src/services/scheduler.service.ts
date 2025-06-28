@@ -2,49 +2,66 @@ import cron from 'node-cron';
 import User from '../models/user.model';
 import { sendBirthdayReminder } from './notification.service';
 
-// Run every day at 9:00 AM
+// Helper to normalize a date to remove time component
+const normalizeDate = (d: Date): Date =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+// Run every minute for testing
 const checkBirthdays = (): void => {
   cron.schedule('0 9 * * *', async () => {
-    console.log('Checking for upcoming birthdays...');
+    console.log('\n=== Starting birthday check ===');
+    console.log(`Current time: ${new Date().toString()}`);
+    console.log(`UTC time: ${new Date().toISOString()}`);
 
-    const today = new Date();
-    const twoDaysLater = new Date(today);
-    twoDaysLater.setDate(today.getDate() + 2);
-
-    const oneDayLater = new Date(today);
-    oneDayLater.setDate(today.getDate() + 1);
+    const now = new Date();
+    const today = normalizeDate(now);
+    console.log(`Normalized today: ${today.toString()}`);
 
     try {
-      // Find all users with birthdays
       const users = await User.find().populate('account');
+      console.log(`Found ${users.length} users in database`);
 
-      // Group birthdays by account
       const accountBirthdays = new Map<
         string,
         { account: any; birthdays: Array<{ user: any; daysUntil: number }> }
       >();
 
       for (const user of users) {
-        const dob = new Date(user.dob);
-        dob.setFullYear(today.getFullYear());
+        const originalDob = new Date(user.dob);
+        const dobThisYear = new Date(
+          today.getFullYear(),
+          originalDob.getMonth(),
+          originalDob.getDate()
+        );
+
+        console.log(`\nChecking user: ${user.name}`);
+        console.log(`Original DOB: ${originalDob.toString()}`);
+        console.log(
+          `DOB this year before adjustment: ${dobThisYear.toString()}`
+        );
+
+        // If the birthday this year already passed, check next year's
+        if (dobThisYear < today) {
+          dobThisYear.setFullYear(today.getFullYear() + 1);
+        }
+
+        const dayDiff = Math.floor(
+          (dobThisYear.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        console.log(`Day difference: ${dayDiff}`);
 
         let daysUntil: number | null = null;
-
-        // Check if birthday is in 1 or 2 days
-        if (
-          dob.getDate() === twoDaysLater.getDate() &&
-          dob.getMonth() === twoDaysLater.getMonth()
-        ) {
-          daysUntil = 2;
-        } else if (
-          dob.getDate() === oneDayLater.getDate() &&
-          dob.getMonth() === oneDayLater.getMonth()
-        ) {
-          daysUntil = 1;
+        if (dayDiff === 1 || dayDiff === 2) {
+          daysUntil = dayDiff;
         }
 
         if (daysUntil !== null) {
+          console.log(
+            `MATCH FOUND: ${user.name}'s birthday is in ${daysUntil} day(s)`
+          );
           const accountId = user.account._id.toString();
+
           if (!accountBirthdays.has(accountId)) {
             accountBirthdays.set(accountId, {
               account: user.account,
@@ -55,17 +72,30 @@ const checkBirthdays = (): void => {
             user,
             daysUntil,
           });
+        } else {
+          console.log(`No match for ${user.name}`);
         }
       }
 
-      // Send one email per account with all birthdays
+      console.log(`\nSummary:`);
+      console.log(`Accounts with birthdays: ${accountBirthdays.size}`);
+
       for (const [accountId, data] of accountBirthdays) {
-        await sendBirthdayReminder(data.account, data.birthdays);
+        console.log(`\nPreparing email for account: ${accountId}`);
+        console.log(`Email address: ${data.account.email}`);
+        console.log(`Birthdays to notify: ${data.birthdays.length}`);
+
+        try {
+          await sendBirthdayReminder(data.account, data.birthdays);
+          console.log('Email sent successfully');
+        } catch (emailError) {
+          console.error('Failed to send email:', emailError);
+        }
       }
 
-      console.log('Birthday check completed.');
+      console.log('\n=== Birthday check completed ===\n');
     } catch (err) {
-      console.error('Error checking birthdays:', err);
+      console.error('Critical error in birthday check:', err);
     }
   });
 };

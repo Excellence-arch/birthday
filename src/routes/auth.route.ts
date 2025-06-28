@@ -41,16 +41,16 @@ router.get(
         expiresIn: '1h',
       });
 
-      // res.redirect(
-      //   `https://birthday-pwa.vercel.app/dashboard?token=${token}&user=${encodeURIComponent(
-      //     JSON.stringify(user)
-      //   )}`
-      // );
       res.redirect(
-        `http://localhost:5173/dashboard?token=${token}&user=${encodeURIComponent(
+        `https://birthday-pwa.vercel.app/dashboard?token=${token}&user=${encodeURIComponent(
           JSON.stringify(user)
         )}`
       );
+      // res.redirect(
+      //   `http://localhost:5173/dashboard?token=${token}&user=${encodeURIComponent(
+      //     JSON.stringify(user)
+      //   )}`
+      // );
       // res.json({
       //   message: 'Authentication successful',
       //   user,

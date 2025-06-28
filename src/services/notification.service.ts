@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendBirthdayReminder = async (
   account: any,
-  birthdays: Array<{ user: any; daysUntil: number }>
+  birthdays: any[]
 ): Promise<void> => {
   // Sort birthdays by days until (1-day first, then 2-day)
   birthdays.sort((a, b) => a.daysUntil - b.daysUntil);
@@ -190,7 +190,7 @@ export const sendBirthdayReminder = async (
   try {
     await transporter.sendMail(mailOptions);
     console.log(
-      `Sent reminder for ${birthdays.length} birthdays to ${account.email}`
+      `Sent reminder for ${birthdays.length} birthday(s) to ${account.email}`
     );
   } catch (err) {
     console.error('Error sending email:', err);
