@@ -12,9 +12,6 @@ import dashboardRoutes from './routes/dashboard.route';
 import birthdayRoutes from './routes/birthday.route';
 import fileUpload from 'express-fileupload';
 
-
-
-
 const app = express();
 app.use(cors());
 app.use(helmet());
@@ -32,11 +29,16 @@ app.use(
 
 connectDB();
 
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/birthdays', birthdayRoutes);
-app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/dashboard', dashboardRoutes);
+
+app.get('/', (req, res) => {
+  res.json({ message: 'Welcome to the Birthday API' });
+  return;
+});
 
 // Start birthday checker
 checkBirthdays();
