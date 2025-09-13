@@ -29,7 +29,9 @@ export const importUsersFromCSV = async (
 
             if (/^\d{4}-\d{2}-\d{2}$/.test(dobStr)) {
               // Full date provided (YYYY-MM-DD)
-              dob = new Date(dobStr);
+              const [month, day] = dobStr.split('-').map(Number);
+              const today = new Date();
+              dob = new Date(Date.UTC(today.getFullYear(), month - 1, day));
             } else if (/^\d{2}-\d{2}$/.test(dobStr)) {
               // Only MM-DD provided, default to current year
               const [month, day] = dobStr.split('-').map(Number);
@@ -47,7 +49,7 @@ export const importUsersFromCSV = async (
 
             // Check for duplicates based on name, phone, and normalized DOB
             const existingUser = await User.findOne({
-              name: user.Fullname,
+              // name: user.Fullname,
               phone: user['Whatsapp Number'],
               account: accountId,
               dob: {
